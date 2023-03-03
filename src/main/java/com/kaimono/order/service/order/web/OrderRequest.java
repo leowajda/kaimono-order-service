@@ -1,4 +1,4 @@
-package com.kaimono.order.service.domain;
+package com.kaimono.order.service.order.web;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,5 +13,4 @@ public record OrderRequest(
         @Positive(message = "The book quantity must be positive.")
         Integer quantity
 
-) {
-}
+) { }

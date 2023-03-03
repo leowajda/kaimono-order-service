@@ -1,4 +1,4 @@
-package com.kaimono.order.service.domain;
+package com.kaimono.order.service.order.domain;
 
 import com.kaimono.order.service.book.Book;
 import com.kaimono.order.service.book.BookClient;
@@ -29,12 +29,12 @@ public class OrderService {
     }
 
 
-    private static Order buildAcceptedOrder(Book book, int quantity) {
+    public static Order buildAcceptedOrder(Book book, int quantity) {
         return Order.of(book.isbn(), book.title() + " - " + book.author(),
                 book.price(), quantity, OrderStatus.ACCEPTED);
     }
 
-    private static Order buildRejectedOrder(String isbn, int quantity) {
+    public static Order buildRejectedOrder(String isbn, int quantity) {
         return Order.of(isbn, null, null, quantity, OrderStatus.REJECTED);
     }
 

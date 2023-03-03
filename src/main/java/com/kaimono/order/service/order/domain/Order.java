@@ -1,4 +1,4 @@
-package com.kaimono.order.service.domain;
+package com.kaimono.order.service.order.domain;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
