@@ -17,17 +17,16 @@ public class OrderService {
         this.bookClient = bookClient;
     }
 
+    public Flux<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
+
     public Mono<Order> submitOrder(String isbn, int quantity) {
         return bookClient.getBookByIsbn(isbn)
                 .map(book -> buildAcceptedOrder(book, quantity))
                 .switchIfEmpty(Mono.fromSupplier(() -> buildRejectedOrder(isbn, quantity)))
                 .flatMap(orderRepository::save);
     }
-
-    public Flux<Order> getAllOrders() {
-        return orderRepository.findAll();
-    }
-
 
     public static Order buildAcceptedOrder(Book book, int quantity) {
         return Order.of(book.isbn(), book.title() + " - " + book.author(),

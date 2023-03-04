@@ -4,6 +4,7 @@ import com.kaimono.order.service.order.domain.Order;
 import com.kaimono.order.service.order.domain.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -23,8 +24,10 @@ public class OrderController {
     }
 
     @PostMapping
-    public Mono<Order> submitOrder(@RequestBody @Valid OrderRequest orderRequest) {
-        return orderService.submitOrder(orderRequest.isbn(), orderRequest.quantity());
+    public Mono<Order> submitOrder(@RequestBody @Valid Mono<OrderRequest> orderRequest) {
+        return orderRequest.flatMap(request ->
+                orderService.submitOrder(request.isbn(), request.quantity()))
+                .onErrorResume(WebExchangeBindException.class, Mono::error);
     }
 
 }
