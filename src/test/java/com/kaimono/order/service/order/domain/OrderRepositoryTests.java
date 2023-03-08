@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -14,6 +15,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import reactor.test.StepVerifier;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataR2dbcTest
 @Testcontainers
@@ -34,6 +37,29 @@ public class OrderRepositoryTests {
         StepVerifier.create(savedOrder)
                 .expectNextMatches(incomingOrder ->
                         incomingOrder.status().equals(OrderStatus.REJECTED))
+                .verifyComplete();
+    }
+
+    @ParameterizedTest
+    @CsvSource("1234567890, Thus Spoke Zarathustra, 9.90, 1, REJECTED")
+    void whenCreateOrderNotAuthenticatedThenNoAuditMetadata(@CsvToOrder Order order) {
+        StepVerifier.create(orderRepository.save(order))
+                .assertNext(incomingOrder -> {
+                    assertThat(incomingOrder.createdBy()).isNull();
+                    assertThat(incomingOrder.lastModifiedBy()).isNull();
+                })
+                .verifyComplete();
+    }
+
+    @ParameterizedTest
+    @WithMockUser("mock-user")
+    @CsvSource("1234567890, Thus Spoke Zarathustra, 9.90, 1, REJECTED")
+    void whenCreateOrderAuthenticatedThenAuditMetadata(@CsvToOrder Order order) {
+        StepVerifier.create(orderRepository.save(order))
+                .assertNext(incomingOrder -> {
+                    assertThat(incomingOrder.createdBy()).isEqualTo("mock-user");
+                    assertThat(incomingOrder.lastModifiedBy()).isEqualTo("mock-user");
+                })
                 .verifyComplete();
     }
 
