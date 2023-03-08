@@ -17,8 +17,8 @@ public class OrderService {
         this.bookClient = bookClient;
     }
 
-    public Flux<Order> getAllOrders() {
-        return orderRepository.findAll();
+    public Flux<Order> getAllOrders(String userID) {
+        return orderRepository.findAllByCreatedBy(userID);
     }
 
     public Mono<Order> submitOrder(String isbn, int quantity) {
