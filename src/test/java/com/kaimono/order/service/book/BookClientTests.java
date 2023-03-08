@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @TestMethodOrder(MethodOrderer.Random.class)
 public class BookClientTests {
@@ -42,7 +43,6 @@ public class BookClientTests {
     @ParameterizedTest
     @ValueSource(strings = "1234567890")
     public void whenBookExistsThenReturnBook(String isbn) {
-
         var mockResponse = new MockResponse()
                 .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setBody("""
@@ -58,21 +58,20 @@ public class BookClientTests {
 
         var book = bookClient.getBookByIsbn(isbn);
         StepVerifier.create(book)
-                .assertNext(b -> b.isbn().equals(b.isbn()))
+                .expectNextMatches(b -> Objects.equals(b.isbn(), isbn))
                 .verifyComplete();
     }
 
     @ParameterizedTest
     @ValueSource(strings = "1234567890")
     public void whenBookNotExistsThenReturnEmpty(String isbn) {
-
         var mockResponse = new MockResponse()
                 .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setResponseCode(HttpStatus.NOT_FOUND.value());
 
+        mockWebServer.enqueue(mockResponse);
         var book = bookClient.getBookByIsbn(isbn);
         StepVerifier.create(book)
-                .expectNextCount(0)
                 .verifyComplete();
     }
 

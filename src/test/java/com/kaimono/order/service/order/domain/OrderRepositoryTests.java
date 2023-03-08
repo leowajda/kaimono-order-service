@@ -27,6 +27,16 @@ public class OrderRepositoryTests {
     @Autowired
     private OrderRepository orderRepository;
 
+    @ParameterizedTest
+    @CsvSource("1234567890, Thus Spoke Zarathustra, 9.90, 1, REJECTED")
+    public void createRejectedOrder(@CsvToOrder Order order) {
+        var savedOrder = orderRepository.save(order);
+        StepVerifier.create(savedOrder)
+                .expectNextMatches(incomingOrder ->
+                        incomingOrder.status().equals(OrderStatus.REJECTED))
+                .verifyComplete();
+    }
+
     @DynamicPropertySource
     private static void postgresqlProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.r2dbc.username", postgresql::getUsername);
@@ -39,16 +49,5 @@ public class OrderRepositoryTests {
                         postgresql.getDatabaseName())
         );
     }
-
-    @ParameterizedTest
-    @CsvSource("1234567890, Thus Spoke Zarathustra, 9.90, 1, REJECTED")
-    public void createRejectedOrder(@CsvToOrder Order order) {
-        var savedOrder = orderRepository.save(order);
-        StepVerifier.create(savedOrder)
-                .expectNextMatches(incomingOrder ->
-                        incomingOrder.status().equals(OrderStatus.REJECTED)
-                ).verifyComplete();
-    }
-
 
 }
